@@ -11,12 +11,15 @@ import SignInScreen from '../screens/SignInScreen';
 import {assignUser} from '../redux/slices/userSlice';
 import ForgetPasswordScreen from '../screens/ForgetPasswordScreen';
 import {removeAuth} from '../redux/slices/authSlice';
+import useRefreshToken from '../utils/refreshToken';
 
 const RootStack = createNativeStackNavigator<RootStackParamList>();
 
 export default function Navigation() {
   const dispatch = useDispatch();
   const auth = useSelector((state: AppState) => state.auth);
+  const {refreshToken} = useRefreshToken();
+
   const fetchUser = async (userId: string, token: string) => {
     try {
       const response = await fetch(`${Config.API_URL}/auth/profile`, {
@@ -55,9 +58,11 @@ export default function Navigation() {
           }),
         );
       } else {
-        throw new Error();
+        const generateNewToken = await refreshToken();
+        fetchUser(generateNewToken.userId, generateNewToken.accessToken);
       }
     } catch (error) {
+      console.log(error);
       dispatch(removeAuth());
       dispatch(
         assignUser({
@@ -85,7 +90,7 @@ export default function Navigation() {
   };
 
   useEffect(() => {
-    if (auth.token && auth.userId) {
+    if (auth.token && auth.userId && auth.refreshToken) {
       fetchUser(auth.userId, auth.token);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

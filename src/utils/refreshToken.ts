@@ -26,11 +26,13 @@ const useRefreshToken = () => {
             refreshToken: data.refreshToken,
           }),
         );
+        return data;
       } else {
-        console.log(data);
+        throw new Error(JSON.stringify(response.status));
       }
     } catch (error) {
       console.log(error);
+      throw new Error('Unauthorized');
     }
   };
 

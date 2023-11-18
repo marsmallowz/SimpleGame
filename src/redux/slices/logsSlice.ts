@@ -30,7 +30,11 @@ const logsSlice = createSlice({
     pushLog(state, action: PayloadAction<{message: string; type: LogTypes}>) {
       const currentTime = new Date();
       state.logs.push({
-        time: `${currentTime.getHours()}:${currentTime.getMinutes()}`,
+        time: `${currentTime.getHours()}:${
+          currentTime.getMinutes() < 10
+            ? `0${currentTime.getMinutes()}`
+            : `${currentTime.getMinutes()}`
+        }`,
         message: action.payload.message,
         type: action.payload.type,
       });

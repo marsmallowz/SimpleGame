@@ -2,10 +2,19 @@ import {PayloadAction} from '@reduxjs/toolkit/src/createAction';
 import {createSlice} from '@reduxjs/toolkit';
 
 export interface MonsterState {
-  monsters: any[];
+  _id: string;
+  name: string;
+  currentHp: number;
+  currentMp: number;
+  totalHp: number;
+  totalMp: number;
 }
 
-const initialState: MonsterState = {
+export interface MonstersState {
+  monsters: MonsterState[];
+}
+
+const initialState: MonstersState = {
   monsters: [],
 };
 
@@ -24,11 +33,11 @@ const monstersSlice = createSlice({
         }
       }
     },
-    fetchMonsters(state, action: PayloadAction<any>) {
+    addMonsters(state, action: PayloadAction<MonstersState>) {
       state.monsters = action.payload.monsters;
     },
   },
 });
 
-export const {attackMonster, fetchMonsters} = monstersSlice.actions;
+export const {attackMonster, addMonsters} = monstersSlice.actions;
 export const monstersReducer = monstersSlice.reducer;

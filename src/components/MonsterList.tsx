@@ -7,15 +7,17 @@ import {useSelector} from 'react-redux';
 import {AppState} from '../redux/slices';
 
 export default function MonsterList({
+  refresh,
   showListStatus,
   setShowListStatus,
   isTimerRunning,
   setIsTimerRunning,
 }: {
+  refresh: () => void;
   showListStatus: ShowList;
-  setShowListStatus: any;
+  setShowListStatus: React.Dispatch<React.SetStateAction<ShowList>>;
   isTimerRunning: boolean;
-  setIsTimerRunning: any;
+  setIsTimerRunning: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const {socket} = useContext(SocketContext);
   const monsters = useSelector((state: AppState) => state.monsters);
@@ -42,21 +44,37 @@ export default function MonsterList({
           }}>
           List Monster
         </Text>
-        <Text
-          onPress={() => {
-            if (showListStatus !== ShowList.Monsters) {
-              setShowListStatus(ShowList.Monsters);
-            } else {
-              setShowListStatus(ShowList.None);
-            }
-          }}
-          style={{
-            fontSize: 14,
-            fontWeight: '700',
-            color: 'gray',
-          }}>
-          {showListStatus === ShowList.Monsters ? 'Hide' : 'Show'}
-        </Text>
+        <View style={{flexDirection: 'row', gap: 8}}>
+          {showListStatus === ShowList.Monsters ? (
+            <Text
+              onPress={() => {
+                refresh();
+                ToastAndroid.show('Monsters refresh', ToastAndroid.SHORT);
+              }}
+              style={{
+                fontSize: 14,
+                fontWeight: '700',
+                color: 'gray',
+              }}>
+              Refresh
+            </Text>
+          ) : null}
+          <Text
+            onPress={() => {
+              if (showListStatus !== ShowList.Monsters) {
+                setShowListStatus(ShowList.Monsters);
+              } else {
+                setShowListStatus(ShowList.None);
+              }
+            }}
+            style={{
+              fontSize: 14,
+              fontWeight: '700',
+              color: 'gray',
+            }}>
+            {showListStatus === ShowList.Monsters ? 'Hide' : 'Show'}
+          </Text>
+        </View>
       </View>
 
       {showListStatus === ShowList.Monsters ? (
@@ -76,9 +94,7 @@ export default function MonsterList({
                 justifyContent: 'space-between',
               }}>
               <View style={{flex: 4}}>
-                <Text style={{flex: 4, color: 'white'}}>
-                  {item.monster.name}
-                </Text>
+                <Text style={{flex: 4, color: 'white'}}>{item.name}</Text>
                 <Text style={{color: 'white'}}>
                   HP: {item.currentHp}/{item.totalHp}
                 </Text>

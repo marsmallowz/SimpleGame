@@ -78,6 +78,9 @@ const userSlice = createSlice({
       }
       state.currentHp = newCurrentHp;
     },
+    setCurrentHpUser(state, action: PayloadAction<number>) {
+      state.currentHp = action.payload;
+    },
     updateUserPosition(
       state,
       action: PayloadAction<{id: string; coordinate: number}>,
@@ -132,5 +135,6 @@ export const {
   updateUserPosition,
   updateUserStatus,
   userLevelUp,
+  setCurrentHpUser,
 } = userSlice.actions;
 export const userReducer = userSlice.reducer;

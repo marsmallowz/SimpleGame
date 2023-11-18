@@ -23,9 +23,20 @@ export default function HomeScreen({
   const dispatch = useDispatch();
   const {socket} = useContext(SocketContext);
   const user = useSelector((state: AppState) => state.user);
-  const [area, setArea] = useState<any>(null);
-
-  const showToastJoinedUser = (data: any) => {
+  const [area, setArea] = useState<{
+    _id: string;
+    column: number;
+    name: string;
+  } | null>(null);
+  const [subAreas, setSubAreas] = useState<
+    Array<{
+      _id: string;
+      areaId: string;
+      coordinate: number;
+      name: string;
+    }>
+  >([]);
+  const showToastJoinedUser = (data: {email: string}) => {
     ToastAndroid.showWithGravity(
       `${
         data.email === user.email
@@ -37,7 +48,16 @@ export default function HomeScreen({
     );
   };
 
-  const GridItem = ({item}: {item: any}) => {
+  const GridItem = ({
+    item,
+  }: {
+    item: {
+      _id: string;
+      areaId: string;
+      coordinate: number;
+      name: string;
+    };
+  }) => {
     return (
       <TouchableOpacity
         onPress={() => {
@@ -67,36 +87,48 @@ export default function HomeScreen({
   };
 
   const handleGridItemClick = (idPosition: string, coordinate: number) => {
-    const col1 = (user.position?.coordinate! - 1) % area.column;
-    const row1 = Math.floor((user.position?.coordinate! - 1) / area.column);
-    const col2 = (coordinate - 1) % area.column;
-    const row2 = Math.floor((coordinate - 1) / area.column);
+    if (area) {
+      const col1 = (user.position?.coordinate! - 1) % area.column;
+      const row1 = Math.floor((user.position?.coordinate! - 1) / area.column);
+      const col2 = (coordinate - 1) % area.column;
+      const row2 = Math.floor((coordinate - 1) / area.column);
 
-    if (Math.abs(col1 - col2) <= 1 && Math.abs(row1 - row2) <= 1) {
-      dispatch(updateUserPosition({id: idPosition, coordinate: coordinate}));
-      socket?.emit('joinSubArea', {
-        email: user.email,
-        joinPosition: idPosition,
-        leavePosition: user.position?.id,
-      });
-    } else {
-      console.log('Ga boleh');
+      if (Math.abs(col1 - col2) <= 1 && Math.abs(row1 - row2) <= 1) {
+        dispatch(updateUserPosition({id: idPosition, coordinate: coordinate}));
+        socket?.emit('joinSubArea', {
+          email: user.email,
+          joinPosition: idPosition,
+          leavePosition: user.position?.id,
+        });
+      }
     }
   };
 
   useEffect(() => {
     if (socket) {
-      socket.on('joinSubArea', (data: any) => {
+      socket.on('joinSubArea', (data: {email: string}) => {
         showToastJoinedUser(data);
       });
-      socket.on('getAreaDetails', (data: {area: any; users: any}) => {
-        setArea(data.area);
-      });
+      socket.on(
+        'getAreaDetails',
+        (data: {
+          area: {_id: string; column: number; name: string};
+          subAreas: Array<{
+            _id: string;
+            areaId: string;
+            coordinate: number;
+            name: string;
+          }>;
+          // users: any;
+        }) => {
+          setArea(data.area);
+          setSubAreas(data.subAreas);
+        },
+      );
     }
 
     return () => {
       if (socket) {
-        socket.off('attackMonster');
         socket.off('getAreaDetails');
         socket.off('joinSubArea');
       }
@@ -122,12 +154,11 @@ export default function HomeScreen({
         <Text style={{fontSize: 20, marginBottom: 10}}>
           {area ? area.name : null}
         </Text>
-        {area ? (
+        {subAreas && area ? (
           <FlatList
-            data={area.subAreas}
+            data={subAreas}
             numColumns={area.column}
             style={{marginBottom: 10}}
-            // contentContainerStyle={styles.gridContainer}
             keyExtractor={(_, index) => index.toString()}
             renderItem={({item}) => {
               return <GridItem item={item} />;

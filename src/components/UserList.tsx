@@ -9,11 +9,14 @@ export default function UserList({
   setShowListStatus,
   isTimerRunning,
 }: {
-  users: any;
+  users: Array<{
+    id: string;
+    email: string;
+  }>;
   showListStatus: ShowList;
-  setShowListStatus: any;
+  setShowListStatus: React.Dispatch<React.SetStateAction<ShowList>>;
   isTimerRunning: boolean;
-  setIsTimerRunning: any;
+  setIsTimerRunning: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   return (
     <View

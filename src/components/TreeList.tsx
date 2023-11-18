@@ -5,17 +5,23 @@ import {ShowList} from '../enums/showList';
 import {SocketContext} from '../contexts/SocketContext';
 
 export default function TreeList({
+  refresh,
   trees,
   showListStatus,
   setShowListStatus,
   isTimerRunning,
   setIsTimerRunning,
 }: {
-  trees: any;
+  refresh: () => void;
+  trees: Array<{
+    _id: string;
+    quantity: number;
+    name: string;
+  }>;
   showListStatus: ShowList;
-  setShowListStatus: any;
+  setShowListStatus: React.Dispatch<React.SetStateAction<ShowList>>;
   isTimerRunning: boolean;
-  setIsTimerRunning: any;
+  setIsTimerRunning: React.Dispatch<React.SetStateAction<boolean>>;
 }) {
   const {socket} = useContext(SocketContext);
 
@@ -41,21 +47,37 @@ export default function TreeList({
           }}>
           List Tree
         </Text>
-        <Text
-          onPress={() => {
-            if (showListStatus !== ShowList.Trees) {
-              setShowListStatus(ShowList.Trees);
-            } else {
-              setShowListStatus(ShowList.None);
-            }
-          }}
-          style={{
-            fontSize: 14,
-            fontWeight: '700',
-            color: 'gray',
-          }}>
-          {showListStatus === ShowList.Trees ? 'Hide' : 'Show'}
-        </Text>
+        <View style={{flexDirection: 'row', gap: 8}}>
+          {showListStatus === ShowList.Trees ? (
+            <Text
+              onPress={() => {
+                refresh();
+                ToastAndroid.show('Trees refresh', ToastAndroid.SHORT);
+              }}
+              style={{
+                fontSize: 14,
+                fontWeight: '700',
+                color: 'gray',
+              }}>
+              Refresh
+            </Text>
+          ) : null}
+          <Text
+            onPress={() => {
+              if (showListStatus !== ShowList.Trees) {
+                setShowListStatus(ShowList.Trees);
+              } else {
+                setShowListStatus(ShowList.None);
+              }
+            }}
+            style={{
+              fontSize: 14,
+              fontWeight: '700',
+              color: 'gray',
+            }}>
+            {showListStatus === ShowList.Trees ? 'Hide' : 'Show'}
+          </Text>
+        </View>
       </View>
       {showListStatus === ShowList.Trees ? (
         <FlatList
@@ -73,7 +95,7 @@ export default function TreeList({
                 flexDirection: 'row',
               }}>
               <Text style={{flex: 4, color: 'white'}}>
-                {item.tree.name} x{item.quantity}
+                {item.name} x{item.quantity}
               </Text>
               <Pressable
                 onPress={() => {

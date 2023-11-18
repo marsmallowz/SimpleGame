@@ -14,7 +14,7 @@ export default function Logs({
   setShowListStatus,
 }: {
   showListStatus: ShowList;
-  setShowListStatus: any;
+  setShowListStatus: React.Dispatch<React.SetStateAction<ShowList>>;
 }) {
   const dispatch = useDispatch();
   const {socket} = useContext(SocketContext);
@@ -102,12 +102,69 @@ export default function Logs({
           );
         },
       );
+      socket.on(
+        'monsterDefeat',
+        (data: {email: string; monsterName: string}) => {
+          dispatch(
+            pushLog({
+              message: `${
+                user.email === data.email ? 'You' : `${data.email}`
+              } have killed ${data.monsterName}`,
+              type: LogTypes.System,
+            }),
+          );
+        },
+      );
+      socket.on(
+        'getDrop',
+        (data: {
+          email: string;
+          monsterName: string;
+          drops: {_id: string; name: string}[];
+        }) => {
+          for (const drop of data.drops) {
+            dispatch(
+              pushLog({
+                message: `${
+                  user.email === data.email ? 'You' : `${data.email}`
+                } got ${drop.name} drop from ${data.monsterName}`,
+                type: LogTypes.System,
+              }),
+            );
+          }
+        },
+      );
+      socket.on(
+        'getExp',
+        (data: {email: string; monsterName: string; exp: number}) => {
+          dispatch(
+            pushLog({
+              message: `${
+                user.email === data.email ? 'You' : `${data.email}`
+              } got ${data.exp} exp from ${data.monsterName}`,
+              type: LogTypes.System,
+            }),
+          );
+        },
+      );
+      socket.on('system', (data: {message: string}) => {
+        dispatch(
+          pushLog({
+            message: `${data.message}`,
+            type: LogTypes.System,
+          }),
+        );
+      });
     }
     return () => {
       if (socket) {
         socket.off('attackMonster');
         socket.off('monsterAttack');
         socket.off('cuttingTree');
+        socket.off('monsterDefeat');
+        socket.off('getDrop');
+        socket.off('getExp');
+        socket.off('system');
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
