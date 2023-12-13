@@ -3,4 +3,5 @@ export enum ShowList {
   Monsters,
   Trees,
   Users,
+  NPCs,
 }

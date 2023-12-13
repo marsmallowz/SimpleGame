@@ -9,8 +9,10 @@ export default function SignUpScreen({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'SignUp'>) {
   const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [isValidEmail, setIsValidEmail] = useState<Boolean | null>(null);
+  const [isValidUsername, setIsValidUsername] = useState<Boolean | null>(null);
   const [isValidPassword, setIsValidPassword] = useState<Boolean | null>(null);
   const [isValidRePassword, setIsValidRePassword] = useState<Boolean | null>(
     null,
@@ -27,6 +29,7 @@ export default function SignUpScreen({
           },
           body: JSON.stringify({
             email,
+            username,
             password,
             rePassword,
           }),
@@ -88,6 +91,26 @@ export default function SignUpScreen({
         <Text style={{color: 'red'}}>Email not in format</Text>
       )}
       <TextInput
+        style={{
+          padding: 8,
+          borderWidth: 1,
+          borderRadius: 5,
+          backgroundColor: 'white',
+        }}
+        placeholder="Username"
+        onChangeText={value => {
+          if (value.length <= 6) {
+            setIsValidUsername(false);
+          } else {
+            setIsValidUsername(true);
+          }
+          setUsername(value);
+        }}
+      />
+      {isValidUsername === false && (
+        <Text style={{color: 'red'}}>Username min 6 character</Text>
+      )}
+      <TextInput
         secureTextEntry
         style={{
           padding: 8,
@@ -136,7 +159,12 @@ export default function SignUpScreen({
       )}
       <Button
         onPress={() => {
-          if (isValidEmail && isValidPassword && isValidRePassword) {
+          if (
+            isValidEmail &&
+            isValidPassword &&
+            isValidRePassword &&
+            isValidUsername
+          ) {
             submitHandler();
           }
         }}

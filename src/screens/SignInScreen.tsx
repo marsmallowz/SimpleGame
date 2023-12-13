@@ -1,16 +1,24 @@
 /* eslint-disable react-native/no-inline-styles */
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Alert, Button, Text, TextInput, View} from 'react-native';
 import {RootStackParamList} from '../navigations/types/rootStackParamList';
 import Config from 'react-native-config';
 import {useDispatch} from 'react-redux';
 import {assignAuth} from '../redux/slices/authSlice';
+import {
+  BannerAd,
+  BannerAdSize,
+  GAMBannerAd,
+  RewardedAd,
+  RewardedAdEventType,
+  TestIds,
+} from 'react-native-google-mobile-ads';
 
 export default function SignInScreen({
   navigation,
 }: NativeStackScreenProps<RootStackParamList, 'SignIn'>) {
-  const [email, setEmail] = useState('');
+  const [usernameOrEmail, setUsernameOrEmail] = useState('');
   const [isValidEmail, setIsValidEmail] = useState<Boolean | null>(null);
   const [isValidPassword, setIsValidPassword] = useState<Boolean | null>(null);
   const [password, setPassword] = useState('');
@@ -23,7 +31,7 @@ export default function SignInScreen({
           'Content-type': 'application/json',
         },
         body: JSON.stringify({
-          email,
+          usernameOrEmail,
         }),
       });
       const json = await response.json();
@@ -61,7 +69,7 @@ export default function SignInScreen({
           'Content-type': 'application/json',
         },
         body: JSON.stringify({
-          email,
+          usernameOrEmail,
           password,
         }),
       });
@@ -80,7 +88,6 @@ export default function SignInScreen({
             {
               text: 'Verify',
               onPress: async () => {
-                console.log('Verify');
                 await verifyHandler();
               },
               style: 'default',
@@ -115,19 +122,59 @@ export default function SignInScreen({
       ]);
     }
   };
+
+  const [loaded, setLoaded] = useState(false);
+
+  const rewarded = RewardedAd.createForAdRequest(TestIds.REWARDED, {
+    requestNonPersonalizedAdsOnly: true,
+    keywords: ['fashion', 'clothing'],
+  });
+
+  useEffect(() => {
+    const unsubscribeLoaded = rewarded.addAdEventListener(
+      RewardedAdEventType.LOADED,
+      () => {
+        setLoaded(true);
+      },
+    );
+
+    const unsubscribeEarned = rewarded.addAdEventListener(
+      RewardedAdEventType.EARNED_REWARD,
+      reward => {
+        console.log('User earned reward of ', reward);
+      },
+    );
+
+    // Start loading the rewarded ad straight away
+    rewarded.load();
+
+    // Unsubscribe from events on unmount
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeEarned();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
-    <View style={{flex: 1, justifyContent: 'center', gap: 10, padding: 10}}>
+    <View
+      style={{
+        flex: 1,
+        justifyContent: 'center',
+        gap: 10,
+        padding: 10,
+      }}>
       <Text style={{fontSize: 32}}>Sign In</Text>
       <TextInput
-        placeholder="Email"
+        placeholder="Email or Username"
         onChangeText={value => {
           const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-          if (emailRegex.test(email)) {
+          if (emailRegex.test(usernameOrEmail) || value.length >= 6) {
             setIsValidEmail(true);
           } else {
             setIsValidEmail(false);
           }
-          setEmail(value);
+          setUsernameOrEmail(value);
         }}
         style={{
           padding: 8,
@@ -137,7 +184,7 @@ export default function SignInScreen({
         }}
       />
       {isValidEmail === false && (
-        <Text style={{color: 'red'}}>Email not in format</Text>
+        <Text style={{color: 'red'}}>Email or Username not in format</Text>
       )}
       <TextInput
         secureTextEntry
@@ -184,6 +231,23 @@ export default function SignInScreen({
         }}>
         Forget password
       </Text>
+      {/* <Button
+        onPress={() => {
+          if (loaded) {
+            rewarded.show();
+          }
+        }}
+        title="Display Rewarded Ads"
+      /> */}
+
+      <GAMBannerAd
+        unitId={TestIds.BANNER}
+        sizes={[BannerAdSize.ANCHORED_ADAPTIVE_BANNER]}
+      />
+      <BannerAd
+        unitId={TestIds.BANNER}
+        size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+      />
     </View>
   );
 }

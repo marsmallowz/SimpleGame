@@ -1,4 +1,7 @@
 {
   "name": "SimpleGame",
-  "displayName": "SimpleGame"
+  "displayName": "SimpleGame",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-8881492844393490~5145712013"
+  }
 }

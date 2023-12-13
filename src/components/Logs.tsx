@@ -27,7 +27,7 @@ export default function Logs({
       socket.on(
         'attackMonster',
         (data: {
-          email: string;
+          username: string;
           monsterName: string;
           monsterId: string;
           damage: number;
@@ -38,7 +38,7 @@ export default function Logs({
           dispatch(
             pushLog({
               message: `${
-                user.email === data.email ? 'You' : `${data.email}`
+                user.username === data.username ? 'You' : `${data.username}`
               } attack ${data.monsterName}`,
               type: LogTypes.AttackMonster,
             }),
@@ -47,8 +47,8 @@ export default function Logs({
       );
       socket.on(
         'monsterAttack',
-        (data: {email: string; monsterName: string; attack: number}) => {
-          if (user.email === data.email) {
+        (data: {username: string; monsterName: string; attack: number}) => {
+          if (user.username === data.username) {
             dispatch(
               pushLog({
                 message: `You got ${data.attack} damage from ${data.monsterName}.`,
@@ -59,7 +59,7 @@ export default function Logs({
           } else {
             dispatch(
               pushLog({
-                message: `${data.email} got ${data.attack} damage from ${data.monsterName}.`,
+                message: `${data.username} got ${data.attack} damage from ${data.monsterName}.`,
                 type: LogTypes.MonsterAttack,
               }),
             );
@@ -69,7 +69,7 @@ export default function Logs({
       socket.on(
         'cuttingTree',
         (data: {
-          email: string;
+          username: string;
           treeId: string;
           treeName: string;
           currentQuantity: number;
@@ -77,7 +77,7 @@ export default function Logs({
           dispatch(
             pushLog({
               message: `${
-                data.email === user.email ? 'You' : `${data.email}`
+                data.username === user.username ? 'You' : `${data.username}`
               } cutting down ${data.treeName}.`,
               type: LogTypes.Gathering,
             }),
@@ -86,8 +86,8 @@ export default function Logs({
       );
       socket.on(
         'levelUp',
-        (data: {email: string; level: number; pointLeft: number}) => {
-          if (user.email === data.email) {
+        (data: {username: string; level: number; pointLeft: number}) => {
+          if (user.username === data.username) {
             dispatch(
               userLevelUp({level: data.level, pointLeft: data.pointLeft}),
             );
@@ -95,7 +95,7 @@ export default function Logs({
           dispatch(
             pushLog({
               message: `${
-                data.email === user.email ? 'You' : `${data.email}`
+                data.username === user.username ? 'You' : `${data.username}`
               } Level Up to ${data.level}.`,
               type: LogTypes.Gathering,
             }),
@@ -104,11 +104,11 @@ export default function Logs({
       );
       socket.on(
         'monsterDefeat',
-        (data: {email: string; monsterName: string}) => {
+        (data: {username: string; monsterName: string}) => {
           dispatch(
             pushLog({
               message: `${
-                user.email === data.email ? 'You' : `${data.email}`
+                user.username === data.username ? 'You' : `${data.username}`
               } have killed ${data.monsterName}`,
               type: LogTypes.System,
             }),
@@ -118,7 +118,7 @@ export default function Logs({
       socket.on(
         'getDrop',
         (data: {
-          email: string;
+          username: string;
           monsterName: string;
           drops: {_id: string; name: string}[];
         }) => {
@@ -126,7 +126,7 @@ export default function Logs({
             dispatch(
               pushLog({
                 message: `${
-                  user.email === data.email ? 'You' : `${data.email}`
+                  user.username === data.username ? 'You' : `${data.username}`
                 } got ${drop.name} drop from ${data.monsterName}`,
                 type: LogTypes.System,
               }),
@@ -136,11 +136,11 @@ export default function Logs({
       );
       socket.on(
         'getExp',
-        (data: {email: string; monsterName: string; exp: number}) => {
+        (data: {username: string; monsterName: string; exp: number}) => {
           dispatch(
             pushLog({
               message: `${
-                user.email === data.email ? 'You' : `${data.email}`
+                user.username === data.username ? 'You' : `${data.username}`
               } got ${data.exp} exp from ${data.monsterName}`,
               type: LogTypes.System,
             }),

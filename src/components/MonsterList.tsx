@@ -78,65 +78,69 @@ export default function MonsterList({
       </View>
 
       {showListStatus === ShowList.Monsters ? (
-        <FlatList
-          style={{
-            paddingHorizontal: 15,
-          }}
-          data={monsters.monsters}
-          renderItem={({item}) => (
-            <View
-              style={{
-                padding: 5,
-                borderRadius: 5,
-                marginVertical: 5,
-                backgroundColor: item.currentHp <= 0 ? 'lightgray' : 'gray',
-                flexDirection: 'row',
-                justifyContent: 'space-between',
-              }}>
-              <View style={{flex: 4}}>
-                <Text style={{flex: 4, color: 'white'}}>{item.name}</Text>
-                <Text style={{color: 'white'}}>
-                  HP: {item.currentHp}/{item.totalHp}
-                </Text>
-              </View>
-              <Pressable
-                onPress={() => {
-                  if (!isTimerRunning) {
-                    if (item.currentHp <= 0) {
-                      ToastAndroid.show(
-                        'Monster has been killed',
-                        ToastAndroid.SHORT,
-                      );
+        monsters.monsters.length ? (
+          <FlatList
+            style={{
+              paddingHorizontal: 15,
+            }}
+            data={monsters.monsters}
+            renderItem={({item}) => (
+              <View
+                style={{
+                  padding: 5,
+                  borderRadius: 5,
+                  marginVertical: 5,
+                  backgroundColor: item.currentHp <= 0 ? 'lightgray' : 'gray',
+                  flexDirection: 'row',
+                  justifyContent: 'space-between',
+                }}>
+                <View style={{flex: 4}}>
+                  <Text style={{flex: 4, color: 'white'}}>{item.name}</Text>
+                  <Text style={{color: 'white'}}>
+                    HP: {item.currentHp}/{item.totalHp}
+                  </Text>
+                </View>
+                <Pressable
+                  onPress={() => {
+                    if (!isTimerRunning) {
+                      if (item.currentHp <= 0) {
+                        ToastAndroid.show(
+                          'Monster has been killed',
+                          ToastAndroid.SHORT,
+                        );
+                      } else {
+                        socket?.emit('attackMonster', {monsterId: item._id});
+                        setIsTimerRunning(true);
+                      }
                     } else {
-                      socket?.emit('attackMonster', {monsterId: item._id});
-                      setIsTimerRunning(true);
+                      ToastAndroid.show('To many request', ToastAndroid.SHORT);
                     }
-                  } else {
-                    ToastAndroid.show('To many request', ToastAndroid.SHORT);
-                  }
-                }}
-                style={({pressed}) => [
-                  {
-                    backgroundColor: pressed ? 'lightgray' : 'white',
-                  },
-                  {
-                    borderRadius: 5,
-                    paddingHorizontal: 8,
-                    paddingVertical: 1,
-                  },
-                ]}>
-                <Text
-                  style={{
-                    flex: 1,
-                    textAlign: 'right',
-                    verticalAlign: 'middle',
-                  }}>
-                  Action
-                </Text>
-              </Pressable>
-            </View>
-          )}
-        />
+                  }}
+                  style={({pressed}) => [
+                    {
+                      backgroundColor: pressed ? 'lightgray' : 'white',
+                    },
+                    {
+                      borderRadius: 5,
+                      paddingHorizontal: 8,
+                      paddingVertical: 1,
+                    },
+                  ]}>
+                  <Text
+                    style={{
+                      flex: 1,
+                      textAlign: 'right',
+                      verticalAlign: 'middle',
+                    }}>
+                    Action
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+          />
+        ) : (
+          <Text style={{paddingLeft: 15}}>Empty</Text>
+        )
       ) : null}
     </View>
   );

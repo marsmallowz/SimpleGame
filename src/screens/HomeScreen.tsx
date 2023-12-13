@@ -2,8 +2,10 @@
 /* eslint-disable react-native/no-inline-styles */
 import React, {useContext, useEffect, useState} from 'react';
 import {
+  Alert,
   Button,
   FlatList,
+  Modal,
   Text,
   ToastAndroid,
   TouchableOpacity,
@@ -16,6 +18,8 @@ import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {MainStackParamList} from '../navigations/types/mainStackParamList';
 import {SocketContext} from '../contexts/SocketContext';
 import {updateUserPosition} from '../redux/slices/userSlice';
+import Icon from 'react-native-vector-icons/AntDesign';
+import {updateSetting} from '../redux/slices/settingSlice';
 
 export default function HomeScreen({
   navigation,
@@ -23,6 +27,8 @@ export default function HomeScreen({
   const dispatch = useDispatch();
   const {socket} = useContext(SocketContext);
   const user = useSelector((state: AppState) => state.user);
+  const setting = useSelector((state: AppState) => state.setting);
+
   const [area, setArea] = useState<{
     _id: string;
     column: number;
@@ -36,12 +42,12 @@ export default function HomeScreen({
       name: string;
     }>
   >([]);
-  const showToastJoinedUser = (data: {email: string}) => {
+  const showToastJoinedUser = (data: {username: string}) => {
     ToastAndroid.showWithGravity(
       `${
-        data.email === user.email
-          ? `Welecome ${data.email}`
-          : `${data.email} has joined`
+        data.username === user.username
+          ? `Welecome ${data.username}`
+          : `${data.username} has joined`
       }`,
       ToastAndroid.SHORT,
       ToastAndroid.TOP,
@@ -94,19 +100,31 @@ export default function HomeScreen({
       const row2 = Math.floor((coordinate - 1) / area.column);
 
       if (Math.abs(col1 - col2) <= 1 && Math.abs(row1 - row2) <= 1) {
-        dispatch(updateUserPosition({id: idPosition, coordinate: coordinate}));
-        socket?.emit('joinSubArea', {
-          email: user.email,
-          joinPosition: idPosition,
-          leavePosition: user.position?.id,
-        });
+        if (idPosition === user?.position?.id) {
+          navigation.navigate('SubArea');
+        } else {
+          dispatch(
+            updateUserPosition({id: idPosition, coordinate: coordinate}),
+          );
+          socket?.emit('joinSubArea', {
+            email: user.email,
+            joinPosition: idPosition,
+            leavePosition: user.position?.id,
+          });
+        }
+      } else {
+        ToastAndroid.showWithGravity(
+          'move one by one',
+          ToastAndroid.SHORT,
+          ToastAndroid.TOP,
+        );
       }
     }
   };
 
   useEffect(() => {
     if (socket) {
-      socket.on('joinSubArea', (data: {email: string}) => {
+      socket.on('joinSubArea', (data: {username: string}) => {
         showToastJoinedUser(data);
       });
       socket.on(
@@ -179,6 +197,43 @@ export default function HomeScreen({
           }}
         />
       </View>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={setting.areaIntro}
+        onRequestClose={() => {
+          Alert.alert('Modal has been closed.');
+          dispatch(updateSetting({areaIntro: !setting.areaIntro}));
+        }}>
+        <View
+          style={{
+            flex: 1,
+            flexDirection: 'column',
+            justifyContent: 'flex-end',
+            backgroundColor: 'rgba(0, 0, 0, 0.2)',
+          }}>
+          <View style={{padding: 10, backgroundColor: 'white', height: '10%'}}>
+            <View
+              style={{flexDirection: 'row', justifyContent: 'space-between'}}>
+              <Text style={{fontSize: 16, fontWeight: '600'}}>
+                Welcome, Player.
+              </Text>
+              <Icon
+                name="close"
+                size={16}
+                color="black"
+                onPress={() => {
+                  dispatch(updateSetting({areaIntro: !setting.areaIntro}));
+                }}
+              />
+            </View>
+            <Text>
+              You are at {area?.name} area, you can access any sub areas one by
+              one.
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }

@@ -8,7 +8,7 @@ import {AppState} from '../redux/slices';
 import {RootStackParamList} from './types/rootStackParamList';
 import SignUpScreen from '../screens/SignUpScreen';
 import SignInScreen from '../screens/SignInScreen';
-import {assignUser} from '../redux/slices/userSlice';
+import {assignUser, removeUser} from '../redux/slices/userSlice';
 import ForgetPasswordScreen from '../screens/ForgetPasswordScreen';
 import {removeAuth} from '../redux/slices/authSlice';
 import useRefreshToken from '../utils/refreshToken';
@@ -37,6 +37,7 @@ export default function Navigation() {
         dispatch(
           assignUser({
             email: data.email,
+            username: data.username,
             attack: data.attack,
             defense: data.defense,
             hp: data.hp,
@@ -55,6 +56,16 @@ export default function Navigation() {
               coordinate: data.position?.coordinate!,
             },
             inventoryId: data.inventory,
+            quests: data.quests,
+            head: data.head,
+            rightHand: data.rightHand,
+            leftHand: data.leftHand,
+            body: data.body,
+            lowerBody: data.lowerBody,
+            leftArm: data.leftArm,
+            rightArm: data.rightArm,
+            leftLeg: data.leftLeg,
+            rightLeg: data.rightLeg,
           }),
         );
       } else {
@@ -64,28 +75,30 @@ export default function Navigation() {
     } catch (error) {
       console.log(error);
       dispatch(removeAuth());
-      dispatch(
-        assignUser({
-          email: null,
-          attack: null,
-          defense: null,
-          hp: null,
-          mp: null,
-          currentHp: null,
-          currentMp: null,
-          experience: null,
-          int: 0,
-          dex: 0,
-          str: 0,
-          vit: 0,
-          luck: 0,
-          pointLeft: 0,
-          position: {
-            id: null,
-            coordinate: null,
-          },
-        }),
-      );
+      dispatch(removeUser());
+      // dispatch(
+      //   assignUser({
+      //     email: null,
+      //     attack: null,
+      //     defense: null,
+      //     hp: null,
+      //     mp: null,
+      //     currentHp: null,
+      //     currentMp: null,
+      //     experience: null,
+      //     int: 0,
+      //     dex: 0,
+      //     str: 0,
+      //     vit: 0,
+      //     luck: 0,
+      //     pointLeft: 0,
+      //     position: {
+      //       id: null,
+      //       coordinate: null,
+      //     },
+      //     quest: null,
+      //   }),
+      // );
     }
   };
 

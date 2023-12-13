@@ -15,6 +15,8 @@ import {addMonsters} from '../redux/slices/monstersSlice';
 import useRefreshToken from '../utils/refreshToken';
 import ModalStatus from '../components/ModalStatus';
 import ModalInventory from '../components/ModalInventory';
+import NPCList from '../components/npcList';
+import ModalNPCQuest from '../components/ModalNpcQuest';
 
 export default function SubAreaScreen() {
   const dispatch = useDispatch();
@@ -24,7 +26,14 @@ export default function SubAreaScreen() {
   const {refreshToken} = useRefreshToken();
   const [modalStatusVisible, setModalStatusVisible] = useState(false);
   const [modalInventoryVisible, setModalInventoryVisible] = useState(false);
-  const [mySubAreaId, setMySubAreaId] = useState(null);
+  const [modalNPCQuestVisible, setModalNPCQuestVisible] = useState(false);
+  const [selectedSubAreaId, setSelectedSubAreaId] = useState(null);
+  const [selectedNPC, setSelectedNPC] = useState<{
+    _id: string;
+    name: string;
+    description: string;
+    talk: string;
+  } | null>(null);
   const [isTimerRunning, setIsTimerRunning] = useState<boolean>(false);
   const [trees, setTrees] = useState<
     Array<{
@@ -39,7 +48,39 @@ export default function SubAreaScreen() {
       email: string;
     }>
   >([]);
+  const [npcs, setNPCs] = useState<
+    Array<{
+      id: string;
+      name: string;
+      description: string;
+      talk: string;
+    }>
+  >([]);
   const [showListStatus, setShowListStatus] = useState<ShowList>(ShowList.None);
+
+  const fetchNPCs = async (subAreaId: string, token: string) => {
+    try {
+      const response = await fetch(
+        `${Config.API_URL}/npcs?subAreaId=${subAreaId}`,
+        {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-type': 'application/json',
+          },
+        },
+      );
+      const data = await response.json();
+      if (response.status === 200) {
+        setNPCs(data);
+      } else if (response.status === 401) {
+        const result = await refreshToken();
+        fetchNPCs(subAreaId, result.accessToken);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const fetchMonsters = async (subAreaId: string, token: string) => {
     try {
@@ -127,10 +168,11 @@ export default function SubAreaScreen() {
       );
       const subArea = await response.json();
       if (response.status === 200) {
-        setMySubAreaId(subArea._id);
+        setSelectedSubAreaId(subArea._id);
         fetchMonsters(subArea._id, token);
         fetchTrees(subArea._id, token);
         fetchUsers(subArea._id, token);
+        fetchNPCs(subArea._id, token);
       } else if (response.status === 401) {
         const result = await refreshToken();
         fetchSubArea(result.accessToken);
@@ -143,14 +185,14 @@ export default function SubAreaScreen() {
   };
 
   const refreshMonsters = () => {
-    if (mySubAreaId && auth.token) {
-      fetchMonsters(mySubAreaId, auth.token);
+    if (selectedSubAreaId && auth.token) {
+      fetchMonsters(selectedSubAreaId, auth.token);
     }
   };
 
   const refreshTrees = () => {
-    if (mySubAreaId && auth.token) {
-      fetchTrees(mySubAreaId, auth.token);
+    if (selectedSubAreaId && auth.token) {
+      fetchTrees(selectedSubAreaId, auth.token);
     }
   };
 
@@ -214,6 +256,14 @@ export default function SubAreaScreen() {
             isTimerRunning={isTimerRunning}
             setIsTimerRunning={setIsTimerRunning}
           />
+          <NPCList
+            npcs={npcs}
+            setSelectedNPC={setSelectedNPC}
+            setModalNPCQuestVisible={setModalNPCQuestVisible}
+            showListStatus={showListStatus}
+            setShowListStatus={setShowListStatus}
+            setIsTimerRunning={setIsTimerRunning}
+          />
           <UserList
             users={users}
             showListStatus={showListStatus}
@@ -229,7 +279,11 @@ export default function SubAreaScreen() {
           />
         </View>
       </View>
-
+      <ModalNPCQuest
+        npc={selectedNPC}
+        setModalNPCQuestVisible={setModalNPCQuestVisible}
+        modalNPCQuestVisible={modalNPCQuestVisible}
+      />
       <ModalStatus
         setModalStatusVisible={setModalStatusVisible}
         modalStatusVisible={modalStatusVisible}
@@ -282,7 +336,6 @@ export default function SubAreaScreen() {
             modalInventoryVisible={modalInventoryVisible}
             setModalInventoryVisible={setModalInventoryVisible}
           />
-
           <Button
             color={'gray'}
             title="Profile"

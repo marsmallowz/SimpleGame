@@ -80,53 +80,57 @@ export default function TreeList({
         </View>
       </View>
       {showListStatus === ShowList.Trees ? (
-        <FlatList
-          style={{
-            paddingHorizontal: 15,
-          }}
-          data={trees}
-          renderItem={({item}) => (
-            <View
-              style={{
-                padding: 5,
-                borderRadius: 5,
-                marginVertical: 5,
-                backgroundColor: 'gray',
-                flexDirection: 'row',
-              }}>
-              <Text style={{flex: 4, color: 'white'}}>
-                {item.name} x{item.quantity}
-              </Text>
-              <Pressable
-                onPress={() => {
-                  if (!isTimerRunning) {
-                    socket?.emit('cuttingTree', {treeId: item._id});
-                    setIsTimerRunning(true);
-                  } else {
-                    ToastAndroid.show('To many request', ToastAndroid.SHORT);
-                  }
-                }}
-                style={({pressed}) => [
-                  {
-                    backgroundColor: pressed ? 'gray' : 'white',
-                  },
-                  {
-                    borderRadius: 5,
-                    paddingHorizontal: 8,
-                    paddingVertical: 1,
-                  },
-                ]}>
-                <Text
-                  style={{
-                    flex: 1,
-                    textAlign: 'right',
-                  }}>
-                  Action
+        trees.length ? (
+          <FlatList
+            style={{
+              paddingHorizontal: 15,
+            }}
+            data={trees}
+            renderItem={({item}) => (
+              <View
+                style={{
+                  padding: 5,
+                  borderRadius: 5,
+                  marginVertical: 5,
+                  backgroundColor: 'gray',
+                  flexDirection: 'row',
+                }}>
+                <Text style={{flex: 4, color: 'white'}}>
+                  {item.name} x{item.quantity}
                 </Text>
-              </Pressable>
-            </View>
-          )}
-        />
+                <Pressable
+                  onPress={() => {
+                    if (!isTimerRunning) {
+                      socket?.emit('cuttingTree', {treeId: item._id});
+                      setIsTimerRunning(true);
+                    } else {
+                      ToastAndroid.show('To many request', ToastAndroid.SHORT);
+                    }
+                  }}
+                  style={({pressed}) => [
+                    {
+                      backgroundColor: pressed ? 'gray' : 'white',
+                    },
+                    {
+                      borderRadius: 5,
+                      paddingHorizontal: 8,
+                      paddingVertical: 1,
+                    },
+                  ]}>
+                  <Text
+                    style={{
+                      flex: 1,
+                      textAlign: 'right',
+                    }}>
+                    Action
+                  </Text>
+                </Pressable>
+              </View>
+            )}
+          />
+        ) : (
+          <Text style={{paddingLeft: 15}}>Empty</Text>
+        )
       ) : null}
     </View>
   );
